@@ -39,8 +39,12 @@
   const textContent = document.getElementById('textContent');
   const textView = document.getElementById('textView');
 
-  // CORS Proxy for fetching external URLs
-  const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+  // CORS Proxies for fetching external URLs (with fallback)
+  // All proxies must accept URL-encoded target URL
+  const CORS_PROXIES = [
+    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?'
+  ];
 
   // Theme functions
   function setTheme(theme) {
@@ -236,37 +240,92 @@
     updateReadingTime();
   }
 
-  // Load article from URL
+  // Load article from URL with fallback proxies
   async function loadFromUrl(url) {
     showLoading(true);
     const cleanedUrl = cleanUrl(url);
 
+    let lastError = null;
+    const errors = [];
+
+    // First try direct fetch (some sites allow CORS)
     try {
-      const response = await fetch(CORS_PROXY + encodeURIComponent(cleanedUrl));
+      console.log('Trying direct fetch...');
+      const response = await fetch(cleanedUrl, {
+        signal: AbortSignal.timeout(8000)
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch article');
+      if (response.ok) {
+        const html = await response.text();
+        const result = parseArticle(html);
+        if (result) {
+          loadText(result);
+          showReader();
+          showLoading(false);
+          return;
+        }
       }
-
-      const html = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-
-      const reader = new Readability(doc);
-      const article = reader.parse();
-
-      if (!article || !article.textContent || article.textContent.trim().length < 100) {
-        throw new Error('Could not extract article content');
-      }
-
-      loadText(article.textContent);
-      showReader();
     } catch (error) {
-      console.error('Error loading URL:', error);
-      showError(error.message || 'Failed to load article');
-    } finally {
-      showLoading(false);
+      console.log('Direct fetch failed (expected for most sites):', error.message);
     }
+
+    // Try each proxy in sequence
+    for (let i = 0; i < CORS_PROXIES.length; i++) {
+      const proxy = CORS_PROXIES[i];
+
+      try {
+        console.log(`Trying proxy ${i + 1}/${CORS_PROXIES.length}: ${proxy}`);
+
+        const response = await fetch(proxy + encodeURIComponent(cleanedUrl), {
+          signal: AbortSignal.timeout(15000) // 15 second timeout
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const html = await response.text();
+
+        if (!html || html.length < 100) {
+          throw new Error('Empty or invalid response');
+        }
+
+        const result = parseArticle(html);
+        if (!result) {
+          throw new Error('Could not extract article content');
+        }
+
+        loadText(result);
+        showReader();
+        showLoading(false);
+        return; // Success!
+
+      } catch (error) {
+        console.error(`Proxy ${i + 1} failed:`, error);
+        errors.push(`${proxy.split('/')[2]}: ${error.message}`);
+        lastError = error;
+        // Continue to next proxy
+      }
+    }
+
+    // All proxies failed
+    showLoading(false);
+    console.error('All proxies failed:', errors);
+    showError('Could not load article. The site may be blocking requests. Try copying the text directly.');
+  }
+
+  // Parse article content from HTML
+  function parseArticle(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    const reader = new Readability(doc);
+    const article = reader.parse();
+
+    if (article && article.textContent && article.textContent.trim().length >= 100) {
+      return article.textContent;
+    }
+    return null;
   }
 
   // Show/hide reader

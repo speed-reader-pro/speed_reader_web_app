@@ -195,7 +195,7 @@
         return;
       }
       if (!isValidUrl(url)) {
-        showError('Please enter a valid URL');
+        showError('Please enter a valid web URL (must start with http:// or https://)');
         return;
       }
       await loadFromUrl(url);
@@ -688,10 +688,42 @@
     }, 3000);
   }
 
-  // Validate URL
+  // Validate URL - only allow http/https
   function isValidUrl(string) {
+    if (!string || typeof string !== 'string') {
+      return false;
+    }
+
+    // Remove whitespace
+    string = string.trim();
+
+    // Check for common invalid patterns
+    if (string.startsWith('file://') || 
+        string.startsWith('C:\\') || 
+        string.startsWith('/') ||
+        string.includes('localhost') ||
+        string.includes('127.0.0.1')) {
+      return false;
+    }
+
     try {
-      new URL(string);
+      const url = new URL(string);
+      
+      // Only allow http and https protocols
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return false;
+      }
+
+      // Must have a valid hostname
+      if (!url.hostname || url.hostname.length === 0) {
+        return false;
+      }
+
+      // Hostname should contain at least one dot (domain.com)
+      if (!url.hostname.includes('.')) {
+        return false;
+      }
+
       return true;
     } catch {
       return false;

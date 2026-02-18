@@ -42,6 +42,8 @@
   // CORS Proxies for fetching external URLs (with fallback)
   // All proxies must accept URL-encoded target URL
   const CORS_PROXIES = [
+    'https://api.codetabs.com/v1/proxy?quest=',
+    'https://corsproxy.org/?',
     'https://api.allorigins.win/raw?url=',
     'https://corsproxy.io/?'
   ];
@@ -288,6 +290,19 @@
 
         if (!html || html.length < 100) {
           throw new Error('Empty or invalid response');
+        }
+
+        // Check if proxy returned an error JSON instead of HTML
+        if (html.trim().startsWith('{') && html.includes('"error"')) {
+          try {
+            const errJson = JSON.parse(html);
+            throw new Error(errJson.error || 'Proxy returned error');
+          } catch (e) {
+            if (e.message !== 'Proxy returned error') {
+              throw new Error('Proxy returned error response');
+            }
+            throw e;
+          }
         }
 
         const result = parseArticle(html);

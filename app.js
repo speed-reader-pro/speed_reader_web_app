@@ -261,7 +261,7 @@
         const html = await response.text();
         const result = parseArticle(html);
         if (result) {
-          loadText(result);
+          loadHtmlContent(result.html, result.title);
           showReader();
           showLoading(false);
           return;
@@ -310,7 +310,7 @@
           throw new Error('Could not extract article content');
         }
 
-        loadText(result);
+        loadHtmlContent(result.html, result.title);
         showReader();
         showLoading(false);
         return; // Success!
@@ -329,18 +329,168 @@
     showError('Could not load article. The site may be blocking requests. Try copying the text directly.');
   }
 
-  // Parse article content from HTML
+  // Parse article content from HTML using Defuddle
   function parseArticle(html) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
-    const reader = new Readability(doc);
-    const article = reader.parse();
+    try {
+      const result = new Defuddle(doc).parse();
 
-    if (article && article.textContent && article.textContent.trim().length >= 100) {
-      return article.textContent;
+      if (result && result.content) {
+        const contentDoc = parser.parseFromString(result.content, 'text/html');
+        const text = contentDoc.body.textContent || '';
+
+        if (text.trim().length >= 100) {
+          return { html: result.content, title: result.title || '' };
+        }
+      }
+    } catch (e) {
+      console.error('Defuddle extraction failed:', e);
     }
+
     return null;
+  }
+
+  // Load structured HTML content into reader (for URL articles)
+  function loadHtmlContent(articleHtml, title) {
+    words = [];
+    currentWordIndex = 0;
+    wordElements = [];
+    textContent.innerHTML = '';
+
+    let wordIndex = 0;
+
+    // Helper: create clickable word spans inside a container
+    function addWords(text, container) {
+      const tokens = text.split(/\s+/).filter(w => w.length > 0);
+      tokens.forEach((token) => {
+        words.push(token);
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = token;
+        span.dataset.index = wordIndex;
+        span.addEventListener('click', () => jumpToWord(parseInt(span.dataset.index)));
+        container.appendChild(span);
+        container.appendChild(document.createTextNode(' '));
+        wordElements.push(span);
+        wordIndex++;
+      });
+    }
+
+    // Add title if present
+    if (title) {
+      const titleEl = document.createElement('h1');
+      titleEl.className = 'article-title';
+      addWords(title, titleEl);
+      textContent.appendChild(titleEl);
+    }
+
+    // Parse the HTML content
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(articleHtml, 'text/html');
+
+    // Tag name to text view element mapping
+    const blockTags = {
+      'H1': 'h2', 'H2': 'h2', 'H3': 'h3', 'H4': 'h4', 'H5': 'h5', 'H6': 'h5',
+      'P': 'p',
+      'BLOCKQUOTE': 'blockquote',
+      'PRE': 'pre',
+      'LI': 'li',
+      'FIGCAPTION': 'figcaption',
+    };
+
+    function processNode(node) {
+      for (const child of node.childNodes) {
+        if (child.nodeType === Node.TEXT_NODE) {
+          const text = child.textContent.trim();
+          if (text) {
+            const p = document.createElement('p');
+            addWords(text, p);
+            textContent.appendChild(p);
+          }
+          continue;
+        }
+
+        if (child.nodeType !== Node.ELEMENT_NODE) continue;
+
+        const tag = child.tagName;
+
+        // Skip images, figures with only images
+        if (tag === 'IMG' || tag === 'SVG') continue;
+        if (tag === 'FIGURE') {
+          // Process figcaption if exists, skip rest
+          const caption = child.querySelector('figcaption');
+          if (caption) {
+            const text = caption.textContent.trim();
+            if (text) {
+              const el = document.createElement('figcaption');
+              addWords(text, el);
+              textContent.appendChild(el);
+            }
+          }
+          continue;
+        }
+
+        // Lists: wrap items
+        if (tag === 'UL' || tag === 'OL') {
+          const listEl = document.createElement(tag.toLowerCase());
+          listEl.className = 'article-list';
+          const items = child.querySelectorAll(':scope > li');
+          items.forEach((li) => {
+            const text = li.textContent.trim();
+            if (text) {
+              const liEl = document.createElement('li');
+              addWords(text, liEl);
+              listEl.appendChild(liEl);
+            }
+          });
+          if (listEl.children.length > 0) {
+            textContent.appendChild(listEl);
+          }
+          continue;
+        }
+
+        // Block-level elements
+        const mappedTag = blockTags[tag];
+        if (mappedTag) {
+          const text = child.textContent.trim();
+          if (text) {
+            const el = document.createElement(mappedTag);
+            if (tag === 'PRE') el.className = 'article-code';
+            if (tag === 'BLOCKQUOTE') el.className = 'article-quote';
+            if (tag.startsWith('H')) el.className = 'article-heading';
+            addWords(text, el);
+            textContent.appendChild(el);
+          }
+          continue;
+        }
+
+        // DIV, SECTION, ARTICLE, etc. — recurse
+        if (tag === 'DIV' || tag === 'SECTION' || tag === 'ARTICLE' || tag === 'MAIN' || tag === 'ASIDE' || tag === 'SPAN' || tag === 'A' || tag === 'TABLE') {
+          processNode(child);
+          continue;
+        }
+
+        // Fallback: treat as paragraph
+        const text = child.textContent.trim();
+        if (text) {
+          const p = document.createElement('p');
+          addWords(text, p);
+          textContent.appendChild(p);
+        }
+      }
+    }
+
+    processNode(doc.body);
+
+    if (words.length === 0) return false;
+
+    displayWord(words[0]);
+    highlightWordInText(0);
+    updateProgress();
+    updateReadingTime();
+    return true;
   }
 
   // Show/hide reader

@@ -12,7 +12,7 @@
 
 **Features:**
 - Paste text reading
-- URL article extraction (via Readability.js)
+- URL article extraction (via Defuddle) with structured content display
 - ORP (Optimal Recognition Point) highlighting
 - Adjustable speed (100-1000 WPM)
 - Smart punctuation delays
@@ -34,7 +34,7 @@ speed_reader_web_app/
 ├── index.html          # Main HTML page
 ├── styles.css          # All styles
 ├── app.js              # RSVP engine + app logic
-├── Readability.js      # Mozilla Readability (local copy)
+├── Defuddle.js         # Defuddle (kepano/defuddle) content extractor
 ├── README.md           # Project readme
 ├── SKILLS.md           # This file
 ├── CHANGELOG.md        # Version history
@@ -45,7 +45,7 @@ speed_reader_web_app/
 
 | Library | Source | Purpose |
 |---------|--------|---------|
-| Readability.js | Local (Mozilla) | Article content extraction |
+| Defuddle.js | Local ([kepano/defuddle](https://github.com/kepano/defuddle)) | Article content extraction with structured HTML |
 
 ### CORS Proxy
 
@@ -138,7 +138,7 @@ Multipliers:
 
 Two tabs:
 - **Paste Text** — textarea for manual input
-- **From URL** — URL input + Readability.js extraction
+- **From URL** — URL input + Defuddle extraction with structured display (headings, paragraphs, quotes, code, lists)
 
 ### Reader Screen (`#readerScreen`)
 
@@ -243,7 +243,7 @@ All platforms above support custom domains for free.
 
 - **CORS**: External URLs require a CORS proxy
 - **Some sites block proxies**: May not work with all URLs
-- **No offline support** (yet): Requires internet for Readability.js CDN
+- **No offline support** (yet): Defuddle.js is bundled locally
 - **Mobile**: Basic support, not optimized
 
 ---
@@ -256,4 +256,4 @@ All platforms above support custom domains for free.
 
 ---
 
-*Last updated: February 15, 2026*
+*Last updated: March 8, 2026*

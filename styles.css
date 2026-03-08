@@ -420,6 +420,76 @@ h1 {
   width: 100%;
 }
 
+/* Article structured content */
+#textContent p {
+  margin-bottom: 12px;
+}
+
+#textContent .article-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+#textContent .article-heading {
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 16px;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+#textContent h2.article-heading {
+  font-size: 17px;
+}
+
+#textContent h3.article-heading {
+  font-size: 16px;
+}
+
+#textContent h4.article-heading,
+#textContent h5.article-heading {
+  font-size: 15px;
+}
+
+#textContent .article-quote {
+  border-left: 3px solid var(--accent);
+  padding-left: 14px;
+  margin: 12px 0;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+#textContent .article-code {
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 13px;
+  background: var(--card-bg);
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin: 12px 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+#textContent .article-list {
+  margin: 8px 0 12px 0;
+  padding-left: 20px;
+}
+
+#textContent .article-list li {
+  margin-bottom: 6px;
+}
+
+#textContent figcaption {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  margin: 4px 0 12px 0;
+}
+
 /* Finish Overlay */
 #finishOverlay {
   position: absolute;

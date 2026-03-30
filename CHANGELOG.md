@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-03-30
+
+### Changed
+- Defuddle now managed via npm with esbuild build (`npm run build:defuddle`)
+- Removed unused Readability.js
+
+### Added
+- `package.json` with defuddle dependency and build script
+- Dependabot config for weekly npm update checks
+- `.gitignore` for node_modules
+- Restructured docs into modular `docs/` directory
+
 ## [0.2.0] - 2026-02-15
 
 ### Added

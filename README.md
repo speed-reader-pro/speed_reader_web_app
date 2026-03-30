@@ -21,15 +21,20 @@ Standalone web application for speed reading using RSVP (Rapid Serial Visual Pre
 # Clone or download the project
 cd speed_reader_web_app
 
+# Install dependencies (generates Defuddle.js)
+npm install
+
 # Start local server (any of these):
-python3 -m http.server 8000
+npm run dev
 # or
-npx serve
+npm run serve
+# or
+python3 -m http.server 8000
 # or
 php -S localhost:8000
 ```
 
-Open http://localhost:8000
+Open http://localhost:8000/public/
 
 ## Keyboard Shortcuts
 
@@ -43,16 +48,23 @@ Open http://localhost:8000
 | `R` | Restart |
 | `Esc` | Back to input |
 
-## Files
+## Project Structure
 
 ```
 speed_reader_web_app/
-├── index.html      # Main page
-├── styles.css      # Styles
-├── app.js          # RSVP engine + app logic
-├── Readability.js  # Mozilla Readability (article extraction)
-├── SKILLS.md       # Technical documentation
-└── README.md       # This file
+├── public/              # Static files (deploy this folder)
+│   ├── index.html      # Main page
+│   ├── src/            # Source code
+│   │   ├── app.js      # RSVP engine + app logic
+│   │   ├── Defuddle.js # Article extraction library
+│   │   └── styles.css  # Styles
+│   └── favicons/       # App icons
+├── docs/               # Documentation
+│   ├── README.md       # Docs overview
+│   └── SKILLS.md       # Technical documentation
+├── package.json        # Dependencies
+├── vercel.json         # Vercel config
+└── README.md           # This file
 ```
 
 ## How URL Reading Works
@@ -66,14 +78,9 @@ speed_reader_web_app/
 
 ## Deployment
 
-This is a static site. Deploy anywhere:
+This is a static site deployed on **Vercel**.
 
-- **GitHub Pages** — push to `gh-pages` branch
-- **Vercel** — connect repo, auto-deploy
-- **Netlify** — connect repo, auto-deploy
-- **Cloudflare Pages** — connect repo, auto-deploy
-
-All free, all work perfectly.
+The `vercel.json` config specifies `public/` as the output directory.
 
 ## Roadmap
 
@@ -86,7 +93,7 @@ All free, all work perfectly.
 ## Related
 
 - [Speed Reader Chrome Extension](https://chromewebstore.google.com/detail/speed-reader/iifbkjcdekfokhpjbiabfgjlloabpdlp) — the original browser extension
-- [SKILLS.md](./SKILLS.md) — technical documentation
+- [docs/SKILLS.md](./docs/SKILLS.md) — technical documentation
 
 ## License
 

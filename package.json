@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "Standalone web application for speed reading using RSVP (Rapid Serial Visual Presentation) technique.",
   "scripts": {
-    "build:defuddle": "esbuild node_modules/defuddle/dist/index.js --bundle --format=iife --global-name=Defuddle --outfile=Defuddle.js --minify",
-    "postinstall": "npm run build:defuddle"
+    "build:defuddle": "esbuild node_modules/defuddle/dist/index.js --bundle --format=iife --global-name=Defuddle --outfile=public/src/Defuddle.js --minify",
+    "postinstall": "npm run build:defuddle",
+    "dev": "python3 -m http.server 8000",
+    "serve": "npx serve ."
   },
   "keywords": [],
   "author": "",

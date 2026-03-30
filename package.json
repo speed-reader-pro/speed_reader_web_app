@@ -1,0 +1,18 @@
+{
+  "name": "speed_reader_web_app",
+  "version": "1.0.0",
+  "description": "Standalone web application for speed reading using RSVP (Rapid Serial Visual Presentation) technique.",
+  "scripts": {
+    "build:defuddle": "esbuild node_modules/defuddle/dist/index.js --bundle --format=iife --global-name=Defuddle --outfile=Defuddle.js --minify",
+    "postinstall": "npm run build:defuddle"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "defuddle": "^0.14.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.4"
+  }
+}

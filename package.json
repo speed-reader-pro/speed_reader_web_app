@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "defuddle": "^0.19.1"
+    "defuddle": "^0.19.2"
   },
   "devDependencies": {
     "esbuild": "^0.28.1"
